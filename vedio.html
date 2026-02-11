@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AL Engineering Technology - Video Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --bg-elevated: #ffffff;
+      --bg-secondary: #f1f5f9;
+      --bg-tertiary: #e2e8f0;
+      --fg: #0f172a;
+      --fg-secondary: #334155;
+      --fg-muted: #64748b;
+      --fg-light: #94a3b8;
+      --accent: #0891b2;
+      --accent-dark: #0e7490;
+      --accent-light: #22d3ee;
+      --accent-surface: #ecfeff;
+      --accent-glow: rgba(8, 145, 178, 0.2);
+      --progress: #e11d48;
+      --border: #e2e8f0;
+      --border-light: #f1f5f9;
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+      --shadow-xl: 0 20px 48px rgba(0, 0, 0, 0.12);
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4, h5, h6 { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.02em; }
+
+    .bg-pattern {
+      position: fixed; inset: 0; z-index: -1;
+      background: radial-gradient(ellipse 100% 80% at 50% -20%, var(--accent-surface) 0%, transparent 50%), var(--bg);
+    }
+
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* Video Card Styles */
+    .video-card {
+      background: var(--bg-elevated);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      border: 1px solid var(--border-light);
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+
+    .video-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-xl);
+      border-color: var(--accent);
+    }
+    .video-card:hover .thumbnail { transform: scale(1.05); }
+    .video-card:hover .play-btn { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+
+    .thumbnail-wrap { position: relative; aspect-ratio: 16/9; overflow: hidden; }
+    .thumbnail { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+
+    .play-btn {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0.85);
+      width: 56px; height: 56px;
+      background: var(--bg-elevated);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: all 0.3s ease;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+    .play-btn svg { width: 24px; height: 24px; fill: var(--accent); margin-left: 3px; }
+
+    .duration-tag {
+      position: absolute; bottom: 10px; right: 10px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(4px);
+      padding: 4px 10px; border-radius: 6px;
+      font-size: 12px; font-weight: 600; color: #fff;
+    }
+
+    .unit-tag {
+      position: absolute; top: 10px; left: 10px;
+      background: var(--accent);
+      padding: 4px 10px; border-radius: 6px;
+      font-size: 11px; font-weight: 700; color: #fff;
+      text-transform: uppercase;
+    }
+
+    .progress-indicator {
+      position: absolute; bottom: 0; left: 0; height: 3px;
+      background: var(--progress);
+    }
+
+    .card-content { padding: 16px; }
+    .card-title { font-weight: 700; font-size: 15px; line-height: 1.4; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .creator-row { display: flex; align-items: center; gap: 10px; }
+    .creator-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-light); }
+    .creator-name { font-size: 14px; font-weight: 600; color: var(--fg-secondary); }
+    .meta-row { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--fg-muted); }
+    .meta-dot { width: 3px; height: 3px; background: var(--fg-light); border-radius: 50%; }
+
+    /* Navigation & Tabs */
+    .sidebar { width: 280px; background: var(--bg-elevated); border-right: 1px solid var(--border); height: 100vh; position: fixed; left: 0; top: 0; overflow-y: auto; z-index: 50; transition: transform 0.3s ease; }
+    .main-content { margin-left: 280px; }
+    .nav-item { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 12px; font-weight: 500; color: var(--fg-secondary); transition: all 0.2s; text-decoration: none; }
+    .nav-item:hover { background: var(--bg-secondary); color: var(--fg); }
+    .nav-item.active { background: var(--accent-surface); color: var(--accent); }
+    .nav-item svg { width: 22px; height: 22px; }
+
+    .tab-btn { padding: 10px 20px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 100px; font-size: 14px; font-weight: 600; color: var(--fg-secondary); white-space: nowrap; transition: all 0.2s; cursor: pointer; }
+    .tab-btn:hover { background: var(--bg-secondary); }
+    .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 4px 12px var(--accent-glow); }
+
+    /* Modal Styles */
+    .modal-overlay { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+    .modal-overlay.active { opacity: 1; visibility: visible; }
+    .modal-backdrop { position: absolute; inset: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); }
+    
+    .modal-container {
+      position: relative; width: 90%; max-width: 960px;
+      transform: scale(0.95) translateY(20px);
+      transition: transform 0.3s ease;
+    }
+    .modal-overlay.active .modal-container { transform: scale(1) translateY(0); }
+
+    /* Responsive Video Wrapper */
+    .video-wrapper {
+      position: relative;
+      padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+      height: 0;
+      overflow: hidden;
+      border-radius: 16px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+      background: #000;
+    }
+
+    .video-wrapper iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    /* Close Button Styling */
+    .close-btn {
+      position: absolute;
+      top: -16px;
+      right: -16px;
+      width: 48px;
+      height: 48px;
+      background: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+      cursor: pointer;
+      z-index: 20;
+      transition: all 0.2s ease;
+      border: none;
+    }
+
+    .close-btn:hover {
+      transform: scale(1.1);
+      background: var(--accent);
+    }
+
+    .close-btn:hover svg {
+      stroke: #fff;
+    }
+
+    .close-btn svg {
+      width: 24px;
+      height: 24px;
+      stroke: var(--fg);
+      stroke-width: 2.5;
+    }
+
+    .modal-info { background: var(--bg-elevated); border-radius: 16px; padding: 24px; margin-top: 16px; border: 1px solid var(--border); }
+
+    /* Utilities */
+    .icon-btn { width: 44px; height: 44px; border-radius: 12px; background: var(--bg-secondary); border: 1px solid var(--border-light); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+    .icon-btn:hover { background: var(--bg-tertiary); }
+    .icon-btn svg { width: 20px; height: 20px; stroke: var(--fg-secondary); }
+    .user-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-dark)); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; }
+    .search-input { width: 100%; padding: 14px 18px 14px 50px; background: var(--bg-secondary); border: 1px solid transparent; border-radius: 12px; font-size: 15px; transition: all 0.2s; }
+    .search-input:focus { outline: none; background: var(--bg-elevated); border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+    
+    .progress-widget { background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary)); border-radius: 12px; padding: 20px; border: 1px solid var(--border-light); }
+    .progress-track { height: 8px; background: var(--bg-elevated); border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-light)); }
+
+    /* Animations */
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-in { animation: slideUp 0.5s ease forwards; opacity: 0; }
+    .delay-1 { animation-delay: 0.05s; } .delay-2 { animation-delay: 0.1s; } .delay-3 { animation-delay: 0.15s; } .delay-4 { animation-delay: 0.2s; }
+
+    @media (max-width: 1024px) {
+      .sidebar { transform: translateX(-100%); z-index: 60; }
+      .sidebar.open { transform: translateX(0); }
+      .main-content { margin-left: 0; }
+      .close-btn { top: -40px; right: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-pattern"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="p-6 border-b border-[var(--border)]">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-[var(--accent)] flex items-center justify-center shadow-lg">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+        </div>
+        <div>
+          <h1 class="text-lg font-extrabold">AL Eng Tech</h1>
+          <p class="text-xs text-[var(--fg-muted)]">Video Portal</p>
+        </div>
+      </div>
+    </div>
+    <nav class="p-4">
+      <p class="text-[11px] font-bold text-[var(--fg-light)] uppercase tracking-wider mb-2 px-2">Course Units</p>
+      <ul class="space-y-1 mb-6">
+        <li><a href="#" class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>All Units</a></li>
+        <li><a href="#" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>Workshop Tech</a></li>
+        <li><a href="#" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"></path></svg>Engineering Drawing</a></li>
+        <li><a href="#" class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>Electrical Systems</a></li>
+      </ul>
+      <div class="progress-widget">
+        <div class="flex justify-between items-center mb-3">
+          <span class="text-sm font-semibold">Syllabus Coverage</span>
+          <span class="text-sm font-bold text-[var(--accent)]">68%</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" style="width: 68%"></div></div>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Header -->
+    <header class="sticky top-0 z-40 bg-[var(--bg)]/80 backdrop-blur-lg border-b border-[var(--border)]">
+      <div class="flex items-center gap-4 p-4 lg:p-5">
+        <button class="icon-btn lg:hidden" id="mobileToggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+        <div class="relative flex-1 max-w-xl">
+          <input type="search" class="search-input" placeholder="Search lessons..." id="searchInput">
+          <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--fg-muted)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </div>
+        <div class="flex items-center gap-3">
+          <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+          <div class="user-avatar">ET</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="p-4 lg:p-8">
+      <!-- Categories -->
+      <div class="flex gap-2 overflow-x-auto pb-4 mb-6 animate-in delay-1" id="categoryFilter">
+        <button class="tab-btn active" data-category="all">All Units</button>
+        <button class="tab-btn" data-category="workshop">Workshop</button>
+        <button class="tab-btn" data-category="drawing">Drawing/CAD</button>
+        <button class="tab-btn" data-category="electrical">Electrical</button>
+        <button class="tab-btn" data-category="theory">Theory</button>
+      </div>
+
+
+
+      <!-- Video Grid -->
+      <section>
+        <div class="flex items-center justify-between mb-6 animate-in delay-3">
+          <h2 class="text-xl font-extrabold">Video Lessons</h2>
+        </div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5" id="videoGrid"></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Video Player Modal -->
+  <div class="modal-overlay" id="videoModal">
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+    <div class="modal-container">
+      
+      <!-- NEW: Prominent Close Button -->
+      <button class="close-btn" id="closeModal" aria-label="Close video">
+        <svg viewBox="0 0 24 24" fill="none">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <!-- Player UI -->
+      <div class="video-wrapper">
+         <div id="playerContainer"></div>
+      </div>
+
+      <!-- Video Info -->
+      <div class="modal-info">
+        <h3 class="text-xl font-bold mb-1" id="modalVideoTitle">Video Title</h3>
+        <div class="flex items-center gap-4 text-sm text-[var(--fg-muted)] mb-4">
+          <span id="modalViews">Part of AL Engineering Syllabus</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Real YouTube Data for AL Engineering Technology
+    const videos = [
+      { 
+        id: 1, 
+        title: "Turbo ET 2026 paper class 02", 
+        youtubeId: "ulGcxZhwTTU", 
+        duration: "02:08:34", 
+        views: "1.2M", 
+        date: "AL Syllabus", 
+        category: "workshop", 
+        channel: "Industry Training", 
+        unit: "Unit 1" 
+      },
+      { 
+        id: 2, 
+        title: "Orthographic Projection (Engineering Drawing)", 
+        youtubeId: "OgOh3-UTHAc", 
+        duration: "14:05", 
+        views: "890K", 
+        date: "AL Syllabus", 
+        category: "drawing", 
+        channel: "Technical Graphics", 
+        unit: "Unit 2" 
+      },
+      { 
+        id: 3, 
+        title: "How AC Motors Work (Induction Motors)", 
+        youtubeId: "JCeNWdF4SQ0", 
+        duration: "22:10", 
+        views: "2.1M", 
+        date: "AL Syllabus", 
+        category: "electrical", 
+        channel: "Engineering Mindset", 
+        unit: "Unit 5" 
+      },
+      { 
+        id: 4, 
+        title: "Arc Welding Basics for Beginners", 
+        youtubeId: "nGHk_tR9hgU", 
+        duration: "11:28", 
+        views: "450K", 
+        date: "AL Syllabus", 
+        category: "workshop", 
+        channel: "Welding Tips", 
+        unit: "Unit 1" 
+      },
+      { 
+        id: 5, 
+        title: "How does an Electric Motor work?", 
+        youtubeId: "EwL5Hot5Efg", 
+        duration: "10:12", 
+        views: "3.5M", 
+        date: "AL Syllabus", 
+        category: "electrical", 
+        channel: "Science Channel", 
+        unit: "Unit 5" 
+      },
+      { 
+        id: 6, 
+        title: "Bernoulli's Principle Explained", 
+        youtubeId: "fFEYvTpRRRI", 
+        duration: "08:45", 
+        views: "1.8M", 
+        date: "AL Syllabus", 
+        category: "theory", 
+        channel: "Physics Tube", 
+        unit: "Unit 3" 
+      },
+      { 
+        id: 7, 
+        title: "AutoCAD 2024 - Full Tutorial for Beginners", 
+        youtubeId: "gHYbrqaHRek", 
+        duration: "1:45:20", 
+        views: "4.2M", 
+        date: "AL Syllabus", 
+        category: "drawing", 
+        channel: "CAD Masters", 
+        unit: "Unit 2" 
+      }
+    ];
+
+    // DOM Elements
+    const grid = document.getElementById('videoGrid');
+    const modal = document.getElementById('videoModal');
+    const closeModalBtn = document.getElementById('closeModal');
+    const backdrop = document.getElementById('modalBackdrop');
+    const categoryBtns = document.querySelectorAll('.tab-btn');
+    const sidebar = document.getElementById('sidebar');
+    const mobileToggle = document.getElementById('mobileToggle');
+    const playerContainer = document.getElementById('playerContainer');
+    const modalTitle = document.getElementById('modalVideoTitle');
+
+    // Render Cards
+    function renderVideos(filter = 'all') {
+      const list = filter === 'all' ? videos : videos.filter(v => v.category === filter);
+      grid.innerHTML = list.map((v, i) => `
+        <article class="video-card animate-in delay-${Math.min(i+1, 4)}" onclick="openModal('${v.youtubeId}', '${v.title.replace(/'/g, "\\'")}')">
+          <div class="thumbnail-wrap">
+            <img src="https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg" class="thumbnail" alt="${v.title}">
+            <div class="play-btn"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></div>
+            <span class="unit-tag">${v.unit}</span>
+            <span class="duration-tag">${v.duration}</span>
+          </div>
+          <div class="card-content">
+            <h3 class="card-title">${v.title}</h3>
+            <div class="creator-row">
+              <div class="w-9 h-9 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-xs font-bold text-[var(--fg-secondary)]">${v.channel.substring(0,2).toUpperCase()}</div>
+              <div>
+                <p class="creator-name">${v.channel}</p>
+                <div class="meta-row"><span>${v.views} views</span><span class="meta-dot"></span><span>${v.date}</span></div>
+              </div>
+            </div>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    // Open Modal with YouTube Iframe
+    function openModal(videoId, title) {
+      playerContainer.innerHTML = `
+        <iframe 
+          src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0" 
+          title="YouTube video player" 
+          frameborder="0" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+          allowfullscreen>
+        </iframe>
+      `;
+      
+      modalTitle.textContent = title;
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      playerContainer.innerHTML = '';
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    // Event Listeners
+    closeModalBtn.addEventListener('click', closeModal);
+    backdrop.addEventListener('click', closeModal);
+    
+    categoryBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        categoryBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderVideos(btn.dataset.category);
+      });
+    });
+
+    mobileToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+
+    // Init
+    renderVideos();
+  </script>
+</body>
+</html>
