@@ -57,6 +57,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            z-index: 1001; /* Keeps logo above menu on mobile */
         }
         .logo i { font-size: 1.8rem; }
         
@@ -83,16 +84,24 @@
             transform: translateY(-1px);
         }
 
+        /* Mobile Menu Toggle (Hamburger) */
+        .menu-toggle {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-main);
+            z-index: 1002;
+        }
+
         /* --- HERO SECTION --- */
         .hero {
             margin-top: 70px; /* Space for fixed nav */
-            /* UPDATED: Background Image with Dark Overlay for text readability */
             background: 
                 linear-gradient(to right, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.7) 40%, rgba(15, 23, 42, 0.2) 100%),
                 url('sameera.png');
             
             background-size: cover;
-            background-position: center right; /* Positions the person to the right side */
+            background-position: center right;
             background-repeat: no-repeat;
             
             color: white;
@@ -101,7 +110,7 @@
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
-            min-height: 85vh; /* Slightly taller for the photo */
+            min-height: 85vh; 
             position: relative;
             overflow: hidden;
         }
@@ -129,7 +138,6 @@
         .btn-outline { background: transparent; border: 2px solid white; color: white; }
         .btn-outline:hover { background: white; color: var(--primary); }
 
-        /* Hero Graphic - Hidden now as the background image serves the purpose */
         .hero-graphic { display: none; }
 
         /* --- STATS BAR --- */
@@ -156,7 +164,8 @@
         .section-subtitle { color: var(--text-muted); margin-bottom: 50px; max-width: 600px; margin-left: auto; margin-right: auto; }
 
         /* --- COURSES GRID --- */
-        .courses-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; }
+        /* Updated: minmax 280px for better mobile fit */
+        .courses-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
         .course-card {
             background: white;
             border-radius: var(--radius);
@@ -165,6 +174,8 @@
             transition: 0.4s;
             text-align: left;
             border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column; /* Added for equal height cards */
         }
         .course-card:hover {
             transform: translateY(-10px);
@@ -173,19 +184,18 @@
         }
         .card-header { padding: 20px; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; }
         .badge { background: var(--primary); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-        .card-body { padding: 20px; }
+        .card-body { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
         .card-body h3 { margin-bottom: 15px; font-size: 1.2rem; }
         .feature-list { list-style: none; margin-bottom: 20px; }
         .feature-list li { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; color: var(--text-muted); font-size: 0.9rem; }
         .feature-list i { color: var(--primary); width: 20px; }
         
-        .price-tag { font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-bottom: 15px; }
+        .price-tag { font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-bottom: 15px; margin-top: auto; /* Pushes price down */ }
         .price-tag span { font-size: 0.8rem; font-weight: 400; color: var(--text-muted); }
         
         .btn-block { width: 100%; justify-content: center; background: var(--primary); color: white; }
         .btn-block:hover { background: var(--primary-dark); }
         
-        /* WhatsApp Specific Color Override */
         .btn-whatsapp { background: #25D366; }
         .btn-whatsapp:hover { background: #128C7E; }
 
@@ -196,11 +206,12 @@
             background: rgba(0,0,0,0.5);
             backdrop-filter: blur(5px);
             z-index: 2000;
-            display: none; /* Hidden by default */
+            display: none; 
             align-items: center;
             justify-content: center;
             opacity: 0;
             transition: 0.3s;
+            padding: 20px; /* Added padding for mobile */
         }
         .modal-active { display: flex; opacity: 1; }
         
@@ -208,7 +219,7 @@
             background: white;
             padding: 40px;
             border-radius: var(--radius);
-            width: 90%;
+            width: 100%;
             max-width: 400px;
             text-align: center;
             position: relative;
@@ -236,7 +247,7 @@
         }
         .input-field:focus { border-color: var(--primary); outline: none; }
 
-        /* --- STUDENT PORTAL DASHBOARD (Hidden until login) --- */
+        /* --- STUDENT PORTAL DASHBOARD --- */
         #dashboard-section { display: none; padding: 100px 5%; background: white; }
         .welcome-banner {
             background: linear-gradient(135deg, #4f46e5 0%, #818cf8 100%);
@@ -284,21 +295,103 @@
         .social-icons a { color: white; font-size: 1.2rem; margin: 0 10px; transition: 0.3s; }
         .social-icons a:hover { color: var(--accent); }
 
-        /* Mobile Responsive */
+        /* =========================================
+           MOBILE RESPONSIVE STYLES
+           ========================================= */
         @media (max-width: 768px) {
-            .hero-content h1 { font-size: 2.2rem; }
-            .hero-graphic { display: none; }
-            .nav-links a:not(.btn-nav) { display: none; } 
-            .nav-links { display: block; }
             
-            /* Darken hero more on mobile so text is readable over the photo */
+            /* Navigation */
+            .menu-toggle { display: block; }
+            
+            .nav-links {
+                position: absolute;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background: white;
+                flex-direction: column;
+                padding: 20px;
+                box-shadow: var(--shadow-lg);
+                display: none; /* Hidden by default */
+                height: auto;
+                border-top: 1px solid #eee;
+            }
+
+            .nav-links.active {
+                display: flex; /* Show when active */
+            }
+
+            .nav-links a {
+                margin: 0;
+                padding: 15px 0;
+                width: 100%;
+                text-align: center;
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 1rem;
+            }
+            
+            .nav-links a:last-child {
+                border-bottom: none;
+                margin-top: 10px;
+            }
+
+            /* Hero */
             .hero {
+                min-height: auto;
+                padding: 60px 5%;
                 background-position: center center;
+                /* Darken overlay more for mobile text readability */
                 background: 
                     linear-gradient(to right, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.8) 100%),
                     url('sameera.png');
                 background-size: cover;
             }
+
+            .hero-content h1 { 
+                font-size: 2rem; 
+            }
+            
+            .hero-content p {
+                font-size: 1rem;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%; /* Full width buttons on mobile */
+                justify-content: center;
+            }
+
+            /* Stats Bar */
+            .stats-bar {
+                margin: -20px 5% 0 5%; /* Reduced overlap */
+                gap: 20px;
+            }
+            
+            .stat-item h2 { font-size: 1.8rem; }
+            .stat-item p { font-size: 0.8rem; }
+
+            /* Sections */
+            .section { padding: 60px 5%; }
+            .section-title { font-size: 1.5rem; }
+            
+            /* Cards */
+            .courses-grid {
+                gap: 20px;
+            }
+
+            /* Modal */
+            .modal-content {
+                padding: 25px;
+            }
+        }
+
+        /* Extra small devices (small phones) */
+        @media (max-width: 400px) {
+            .logo span { display: none; } /* Hide text logo, show icon only */
+            .logo i { font-size: 2rem; }
         }
     </style>
 </head>
@@ -310,12 +403,18 @@
             <i class="fas fa-cogs"></i>
             <span>ET Masterclass</span>
         </div>
-        <div class="nav-links">
-            <a href="#home">Home</a>
-            <a href="#courses">Courses</a>
-            <a href="#materials">Materials</a>
-            <a href="#contact">Contact</a>
-            <a href="#" class="btn-nav" onclick="openModal()">Student Login</a>
+        
+        <!-- Mobile Menu Icon -->
+        <div class="menu-toggle" onclick="toggleMobileMenu()">
+            <i class="fas fa-bars" id="menuIcon"></i>
+        </div>
+
+        <div class="nav-links" id="navLinks">
+            <a href="#home" onclick="closeMobileMenu()">Home</a>
+            <a href="#courses" onclick="closeMobileMenu()">Courses</a>
+            <a href="#materials" onclick="closeMobileMenu()">Materials</a>
+            <a href="#contact" onclick="closeMobileMenu()">Contact</a>
+            <a href="#" class="btn-nav" onclick="openModal(); closeMobileMenu();">Student Login</a>
         </div>
     </nav>
 
@@ -329,7 +428,6 @@
                 <a href="#" class="btn btn-outline"><i class="fas fa-play-circle"></i> Watch Demo</a>
             </div>
         </div>
-        <!-- The placeholder graphic has been removed so the background photo is visible -->
     </div>
 
     <!-- STATS BAR -->
@@ -457,16 +555,15 @@
     <!-- FOOTER -->
     <footer id="contact">
         <div style="max-width: 600px; margin: 0 auto;">
-            <h2 style="margin-bottom: 20px;">sameera niranjana </h2>
+            <h2 style="margin-bottom: 20px;">Sameera Niranjana</h2>
             <p style="margin-bottom: 20px; color: #94a3b8;">Empowering the next generation of engineers.</p>
             <div class="social-icons">
-                <!-- Updated WhatsApp Link -->
                 <a href="https://wa.me/94740802427" target="_blank"><i class="fab fa-whatsapp"></i></a>
                 <a href="#"><i class="fab fa-telegram"></i></a>
                 <a href="#"><i class="fab fa-facebook"></i></a>
                 <a href="#"><i class="fab fa-youtube"></i></a>
             </div>
-            <p style="margin-top: 30px; font-size: 0.8rem; color: #64748b;">© 2026 All Rights Reserved.by prabod madusanka</p>
+            <p style="margin-top: 30px; font-size: 0.8rem; color: #64748b;">© 2026 All Rights Reserved. By Prabod Madusanka</p>
         </div>
     </footer>
 
@@ -490,7 +587,32 @@
 
     <!-- JAVASCRIPT -->
     <script>
-        // Modal Functions
+        // --- Mobile Menu Functions ---
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const menuIcon = document.getElementById('menuIcon');
+            
+            navLinks.classList.toggle('active');
+            
+            // Toggle Icon between bars and times (X)
+            if (navLinks.classList.contains('active')) {
+                menuIcon.classList.remove('fa-bars');
+                menuIcon.classList.add('fa-times');
+            } else {
+                menuIcon.classList.remove('fa-times');
+                menuIcon.classList.add('fa-bars');
+            }
+        }
+
+        function closeMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const menuIcon = document.getElementById('menuIcon');
+            navLinks.classList.remove('active');
+            menuIcon.classList.remove('fa-times');
+            menuIcon.classList.add('fa-bars');
+        }
+
+        // --- Modal Functions ---
         function openModal() {
             document.getElementById('loginModal').classList.add('modal-active');
         }
@@ -499,13 +621,13 @@
             document.getElementById('loginModal').classList.remove('modal-active');
         }
 
-        // Password Logic
+        // --- Password Logic ---
         function checkPassword() {
             var password = document.getElementById("passwordInput").value;
             if (password === "1234") {
-                closeModal(); // Close popup
-                document.getElementById('dashboard-section').style.display = 'block'; // Show Dashboard
-                document.getElementById('dashboard-section').scrollIntoView({ behavior: 'smooth' }); // Scroll to it
+                closeModal(); 
+                document.getElementById('dashboard-section').style.display = 'block'; 
+                document.getElementById('dashboard-section').scrollIntoView({ behavior: 'smooth' });
             } else {
                 document.getElementById("errorMsg").style.display = "block";
             }
@@ -518,7 +640,3 @@
     </script>
 </body>
 </html>
-
-
-
-
